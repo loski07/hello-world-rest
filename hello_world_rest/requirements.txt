@@ -1,0 +1,6 @@
+setuptools >= 67.6.0
+Flask >= 2.2.3
+Flask-Testing >= 0.8.1
+Flask-PyMongo >= 2.3.0
+pytest
+gunicorn
