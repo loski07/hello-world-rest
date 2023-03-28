@@ -1,9 +1,9 @@
 version: '3.7'
 services:
-  app:
-    build: .
-    ports:
-      - 8000:8000
+#  app:
+#    build: .
+#    ports:
+#      - 8000:8000
   mongodb_container:
     image: docker.io/mongo:latest
     ports:
