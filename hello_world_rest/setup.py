@@ -31,7 +31,6 @@ setup(
     keywords='helloworld REST',
 
     packages=find_packages(exclude=['docs', 'tests']),
-
     install_requires=install_requires,
 
 )
