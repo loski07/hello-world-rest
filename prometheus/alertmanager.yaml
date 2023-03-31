@@ -1,0 +1,19 @@
+route:
+  # Other settings...
+  group_wait: 0s
+  group_interval: 1m
+  repeat_interval: 1h
+
+  # Default receiver.
+  receiver: "null"
+
+  routes:
+    # continue defaults to false, so the first match will end routing.
+    - match:
+        # This was previously named DeadMansSwitch
+        alertname: ServiceDown
+      receiver: "null"
+
+
+receivers:
+  - name: "null"
