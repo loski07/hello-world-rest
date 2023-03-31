@@ -1,15 +1,91 @@
-version: '3.7'
+version: '3.8'
 services:
-  app:
+  balancer:
+    image: haproxy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+
+  app-blue:
     build: .
     ports:
-      - 8000:8000
-  mongodb_container:
+      - "8000:8000"
+    environment:
+      MONGODB_URL: "mongodb://database:27017/hello_world_rest_db"
+    profiles:
+      - initial
+
+  app-green:
+    build: .
+    ports:
+      - "8001:8001"
+    environment:
+      MONGODB_URL: "mongodb://database:27017/hello_world_rest_db"
+      LISTENING_PORT: "8001"
+
+  database:
     image: docker.io/mongo:latest
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - mongodb_data_container:/data/db
+    profiles:
+      - initial
+
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    ports:
+      - "9115:9115"
+    command:
+      - --config.file=/etc/blackbox/blackbox.yaml
+    volumes:
+      - ./prometheus/blackbox.yaml:/etc/blackbox/blackbox.yaml
+    profiles:
+      - initial
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yaml
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./prometheus/alert_rules.yaml:/etc/prometheus/alert_rules.yaml
+    depends_on:
+      - alertmanager
+    profiles:
+      - initial
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.conf
+    volumes:
+      - ./prometheus/alertmanager.yaml:/etc/alertmanager/alertmanager.conf
+    depends_on:
+      - blackbox
+    profiles:
+      - initial
+
+  grafana:
+    image: grafana/grafana:latest
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+    restart: always
+    profiles:
+      - initial
 
 volumes:
-  mongodb_data_container:
+  mongodb_data_container: { }
+  grafana_data: { }

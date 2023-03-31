@@ -1,0 +1,13 @@
+groups:
+  - name: HelloWorldService
+    rules:
+      - alert: ServiceDown
+        # Condition for alerting
+        expr: probe_success{job="blackbox", instance="http://balancer:80/isAlive"} == 0
+        # Annotation - additional informational labels to store more information
+        annotations:
+          title: 'The service is down'
+          description: 'The service cannot be reached from the outside'
+        # Labels - additional labels to be attached to the alert
+        labels:
+          severity: 'critical'

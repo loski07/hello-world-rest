@@ -1,0 +1,54 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+rule_files:
+  - /etc/prometheus/alert_rules.yaml
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+        - prometheus:9090
+
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    scrape_interval: 3s
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://app-blue:8000/isAlive
+          - http://app-green:8001/isAlive
+          - http://balancer:80/isAlive
+    relabel_configs:
+      - source_labels:
+          - __address__
+        target_label: __param_target
+      - source_labels:
+          - __param_target
+        target_label: instance
+      - replacement: blackbox:9115
+        target_label: __address__
+
+  - job_name: 'blackbox-tcp'
+    metrics_path: /probe
+    params:
+      module: [ tcp_connect ]
+    static_configs:
+      - targets:
+          - balancer:80
+          - database:27017
+          - grafana:3000
+    relabel_configs:
+      - source_labels: [ __address__ ]
+        target_label: __param_target
+      - source_labels: [ __param_target ]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
