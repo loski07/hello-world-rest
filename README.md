@@ -39,11 +39,12 @@ There are multiple ways we could architect a cloud solution for this deployment:
   Jsonnet, Kustomize or pure k8s manifest definition. We can configure the Python API deployment to perform
   rolling updates so, in order to make a zero-downtime deployment we just need to push a new image to the
   registry and modify the image `kubectl set image deployment python-api-deployment python-api-container=hello-world-rest-app:latest`
+- Using lambda functions: We can configure lambda to make [rolling deployments](https://docs.aws.amazon.com/lambda/latest/dg/lambda-rolling-deployments.html)
 - Using EC2: We can simply provision EC2 instances (with docker installed) for the Python APP and the MongoDB and
   include the instances for the Python APP in the balancing pool of an Application Load Balancer. The zero-downtime
   deployment can be done by creating a new EC2 instance with the app deployed on it, including it in the pool of the 
   balancer and removing the old instances. We can use `Terraform` for creating the network layout and each individual
-  EC2 instance. In the image below, you can see an ![AWS diagram](docs/AWS-diagram.png) for this alternative.
+  EC2 instance. In the image below, you can see a ![AWS diagram](docs/AWS-diagram.png) for this alternative.
 
 Both solutions can be orchestrated with a CD pipeline of the multiple solutions you can find in the market (Jenkins,
 Spinnaker, GitHub Actions,...) 
